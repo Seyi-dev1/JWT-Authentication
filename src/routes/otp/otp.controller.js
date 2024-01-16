@@ -2,6 +2,7 @@ const {
   sendOTP,
   handleOTPVerification,
 } = require("../../models/otp/otp.model");
+
 const requestOTP = async (req, res) => {
   try {
     const { email, subject, message, duration } = req.body;

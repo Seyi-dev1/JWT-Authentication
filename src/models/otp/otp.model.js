@@ -1,4 +1,5 @@
 const OTP = require("./otp.model.mongo");
+const user = require("../users/users.mongo");
 const generateOTP = require("../../utilities/generateOTP");
 const sendEmail = require("../../utilities/sendEmail");
 const { hashData, verifyHashedData } = require("../../utilities/hashData");
@@ -82,4 +83,47 @@ const deleteOTP = async (email) => {
   }
 };
 
-module.exports = { sendOTP, handleOTPVerification, deleteOTP };
+// sending OTP to email
+const sendOTPToEmail = async (email) => {
+  try {
+    // check if the account exists
+    const existingUser = await user.findOne({ email });
+    if (!existingUser) {
+      throw Error("account does not exist");
+    }
+
+    const otpDetails = {
+      email,
+      subject: "Email verification",
+      message: "verify your email with the code below.",
+      duration: 1,
+    };
+    const createdOTP = await sendOTP(otpDetails);
+    return createdOTP;
+  } catch (error) {
+    throw error;
+  }
+};
+
+// using OTP to verify email after it is sent
+const verifyEmailWithOTP = async ({ email, otp }) => {
+  try {
+    const validOTP = await handleOTPVerification({ email, otp });
+    if (!validOTP) {
+      throw Error("invalid code submitted.");
+    }
+
+    await deleteOTP(email);
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
+module.exports = {
+  sendOTP,
+  handleOTPVerification,
+  deleteOTP,
+  sendOTPToEmail,
+  verifyEmailWithOTP,
+};
