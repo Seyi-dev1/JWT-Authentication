@@ -1,9 +1,10 @@
 const OTP = require("./otp.model.mongo");
 const generateOTP = require("../../utilities/generateOTP");
 const sendEmail = require("../../utilities/sendEmail");
-const { hasData, hashData } = require("../../utilities/hashData");
+const { hashData, verifyHashedData } = require("../../utilities/hashData");
 const { AUTH_EMAIL } = process.env;
 
+// OTP requesting
 const sendOTP = async ({ email, subject, message, duration = 1 }) => {
   try {
     if (!email || !subject || !message) {
@@ -41,4 +42,44 @@ const sendOTP = async ({ email, subject, message, duration = 1 }) => {
   }
 };
 
-module.exports = { sendOTP };
+// OTP veification
+const handleOTPVerification = async ({ email, otp }) => {
+  try {
+    if (!email || !otp) {
+      throw Error("provide values for email, otp");
+    }
+
+    // ensure otp record exists
+    const matchedOTPRecord = await OTP.findOne({ email });
+
+    if (!matchedOTPRecord) {
+      throw Error("OTP records not found");
+    }
+
+    const { expiresAt } = matchedOTPRecord;
+
+    //checkig for expired code
+    if (expiresAt < Date.now()) {
+      await OTP.deleteOne({ email });
+      throw Error("Code has expired. Request a new code");
+    }
+
+    // not expired, verify value
+    const hashedOTP = matchedOTPRecord.otp;
+    const validOTP = await verifyHashedData(otp, hashedOTP);
+
+    return validOTP;
+  } catch (error) {
+    throw error;
+  }
+};
+
+const deleteOTP = async (email) => {
+  try {
+    await OTP.deleteOne({ email });
+  } catch (error) {
+    throw error;
+  }
+};
+
+module.exports = { sendOTP, handleOTPVerification, deleteOTP };

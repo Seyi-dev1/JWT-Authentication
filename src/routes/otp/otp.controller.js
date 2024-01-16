@@ -1,5 +1,8 @@
-const { sendOTP } = require("../../models/otp/otp.model");
-const GetOTP = async (req, res) => {
+const {
+  sendOTP,
+  handleOTPVerification,
+} = require("../../models/otp/otp.model");
+const requestOTP = async (req, res) => {
   try {
     const { email, subject, message, duration } = req.body;
 
@@ -16,4 +19,15 @@ const GetOTP = async (req, res) => {
   }
 };
 
-module.exports = GetOTP;
+const verifyOTP = async (req, res) => {
+  try {
+    let { email, otp } = req.body;
+
+    const validOTP = await handleOTPVerification({ email, otp });
+    return res.status(200).json({ valid: validOTP });
+  } catch (error) {
+    res.status(400).send(error.message);
+  }
+};
+
+module.exports = { requestOTP, verifyOTP };

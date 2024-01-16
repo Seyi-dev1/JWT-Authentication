@@ -1,8 +1,9 @@
 const express = require("express");
-const GetOTP = require("./otp.controller");
+const { requestOTP, verifyOTP } = require("./otp.controller");
 
 const OTPRouter = express.Router();
 
-OTPRouter.post("/", GetOTP);
+OTPRouter.post("/", requestOTP);
+OTPRouter.post("/verify", verifyOTP);
 
 module.exports = OTPRouter;
