@@ -152,6 +152,24 @@ const sendPasswordResetOTPToEmail = async (email) => {
   }
 };
 
+// password reset function
+const resetPassword = async ({ email, otp, newPassword }) => {
+  try {
+    const validOTP = await handleOTPVerification({ email, otp });
+    if (!validOTP) {
+      throw Error("Invalid verification code. Check code");
+    }
+
+    //update user record with new password
+    const hashedNewPassword = await hashData(newPassword);
+    await user.updateOne({ email }, { password: hashedNewPassword });
+    await deleteOTP(email);
+    return;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   sendOTP,
   handleOTPVerification,
@@ -159,4 +177,5 @@ module.exports = {
   sendOTPToEmail,
   verifyEmailWithOTP,
   sendPasswordResetOTPToEmail,
+  resetPassword,
 };
