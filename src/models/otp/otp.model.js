@@ -83,7 +83,7 @@ const deleteOTP = async (email) => {
   }
 };
 
-// sending OTP to email
+// sending OTP to email for email verification
 const sendOTPToEmail = async (email) => {
   try {
     // check if the account exists
@@ -123,10 +123,40 @@ const verifyEmailWithOTP = async ({ email, otp }) => {
   }
 };
 
+// send OTP to email for password reset
+const sendPasswordResetOTPToEmail = async (email) => {
+  try {
+    // check if the account exists
+    const existingUser = await user.findOne({ email });
+    if (!existingUser) {
+      throw Error("account does not exist");
+    }
+
+    if (!existingUser.verified) {
+      throw Error(
+        "email has not been verified, check mail for verification code"
+      );
+    }
+
+    const otpDetails = {
+      email,
+      subject: "password reset",
+      message: "reset your password with the code below.",
+      duration: 1,
+    };
+
+    const createdOTP = await sendOTP(otpDetails);
+    return createdOTP;
+  } catch (error) {
+    throw error;
+  }
+};
+
 module.exports = {
   sendOTP,
   handleOTPVerification,
   deleteOTP,
   sendOTPToEmail,
   verifyEmailWithOTP,
+  sendPasswordResetOTPToEmail,
 };
