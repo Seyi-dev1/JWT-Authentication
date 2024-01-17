@@ -1,4 +1,5 @@
 const { createNewUser } = require("../../models/users/users.model");
+const { sendOTPToEmail } = require("../../models/otp/otp.model");
 
 const signUp = async (req, res) => {
   try {
@@ -30,6 +31,7 @@ const signUp = async (req, res) => {
         email,
         password,
       });
+      await sendOTPToEmail(email);
       return res.status(201).json(newUser);
     }
   } catch (error) {

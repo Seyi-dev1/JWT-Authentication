@@ -113,6 +113,9 @@ const verifyEmailWithOTP = async ({ email, otp }) => {
       throw Error("invalid code submitted.");
     }
 
+    // now update user record to show verified
+    await user.updateOne({ email }, { verified: true });
+
     await deleteOTP(email);
     return;
   } catch (error) {

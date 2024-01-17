@@ -41,6 +41,10 @@ const authenticateUser = async (data) => {
       throw Error("User does not exist!");
     }
 
+    if (!fetchedUser.verified) {
+      throw Error("email not verified. check mail for verification code");
+    }
+
     const hashedPassword = fetchedUser.password;
     const passwordMatch = await verifyHashedData(password, hashedPassword);
 
